@@ -17,6 +17,8 @@
                     // "-lglu32",
                     // "-lopengl32",
                     "-o", "Builds/OSX_Build/engine", // the output file
+                    "-framework", "GLUT",
+                    "-framework", "OpenGL",
                     "-lGL",
                     "-lGLEW",
                     "-lGLU",
