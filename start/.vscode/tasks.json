@@ -1,0 +1,27 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "0.1.0",
+    "type": "shell",
+    "osx": {
+        "tasks": [
+            {
+                "taskName": "Build",
+                "command": "g++",//或者clang++
+                "args": [
+                    "-g",
+                    "--std=c++11", // C语言最新标准为c11，或根据自己的需要进行修改
+                    "main.cpp", // the file to be compiled
+                    // "-static-libgcc", // 静态链接
+                    // "-lglut32",//使用glut
+                    // "-lglu32",
+                    // "-lopengl32",
+                    "-o", "Builds/OSX_Build/engine", // the output file
+                    "-lGL",
+                    "-lGLEW",
+                    "-lGLU",
+                ]
+            }
+        ],
+    }
+}
