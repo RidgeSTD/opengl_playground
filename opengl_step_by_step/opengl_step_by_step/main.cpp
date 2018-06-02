@@ -20,7 +20,7 @@ static void RenderScenceCB() {
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
 	// 开始绘制几何图形(绘制一个点)
-	glDrawArrays(GL_POINTS, 0, 1);
+	glDrawArrays(GL_TRIANGLES, 0, 3);
 
 	//  禁用顶点数据
 	glDisableVertexAttribArray(0);
@@ -35,9 +35,11 @@ static void RenderScenceCB() {
 static void CreateVertexBuffer()
 {
 	// 创建含有一个顶点的顶点数组
-	Vector3f Vertices[1];
+	Vector3f Vertices[3];
 	// 将点置于屏幕中央
-	Vertices[0] = Vector3f(0.0f, 0.0f, 0.0f);
+	Vertices[0] = Vector3f(-0.8f, -0.8f, 0.0f);
+	Vertices[1] = Vector3f(0.8f, -0.8f, 0.0f);
+	Vertices[2] = Vector3f(0.0f, 0.8f, 0.0f);
 
 	// 创建缓冲器
 	glGenBuffers(1, &VBO);
