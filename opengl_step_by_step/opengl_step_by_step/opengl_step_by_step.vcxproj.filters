@@ -18,5 +18,16 @@
     <ClCompile Include="main.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="ogldev_util.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="shader.vs">
+      <Filter>源文件</Filter>
+    </None>
+    <None Include="shader.fs">
+      <Filter>源文件</Filter>
+    </None>
   </ItemGroup>
 </Project>
