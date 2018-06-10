@@ -6,5 +6,5 @@ out vec4 FragColor;  // 片段着色器的输出颜色变量
 void main()
 {
     // 定义输出颜色值
-    FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+    FragColor = vec4(1.0, 0.3, 0.0, 1.0);
 }
