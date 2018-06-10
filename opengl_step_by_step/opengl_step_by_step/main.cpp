@@ -23,10 +23,17 @@ static void RenderSceneCB()
 	// 将值传递给shader
 	Matrix4f world;
 
-	world.m[0][0] = 1.0f; world.m[0][1] = 0.0f; world.m[0][2] = 0.0f; world.m[0][3] = sinf(Scale);
-	world.m[1][0] = 0.0f; world.m[1][1] = 1.0f; world.m[1][2] = 0.0f; world.m[1][3] = 0.0f;
+	//绕着Z轴旋转
+	world.m[0][0] = cosf(Scale); world.m[0][1] = -sinf(Scale); world.m[0][2] = 0.0f; world.m[0][3] = 0.0f;
+	world.m[1][0] = sinf(Scale); world.m[1][1] = cosf(Scale); world.m[1][2] = 0.0f; world.m[1][3] = 0.0f;
 	world.m[2][0] = 0.0f; world.m[2][1] = 0.0f; world.m[2][2] = 1.0f; world.m[2][3] = 0.0f;
 	world.m[3][0] = 0.0f; world.m[3][1] = 0.0f; world.m[3][2] = 0.0f; world.m[3][3] = 1.0f;
+
+	//绕着Y轴旋转
+	//world.m[0][0] = cosf(Scale); world.m[0][1] = 0.0f; world.m[0][2] = -sinf(Scale); world.m[0][3] = 0.0f;
+	//world.m[1][0] = 0.0f; world.m[1][1] = 1.0f; world.m[1][2] = 0.0f; world.m[1][3] = 0.0f;
+	//world.m[2][0] = sinf(Scale); world.m[2][1] = 0.0f; world.m[2][2] = cosf(Scale); world.m[2][3] = 0.0f;
+	//world.m[3][0] = 0.0f; world.m[3][1] = 0.0f; world.m[3][2] = 0.0f; world.m[3][3] = 1.0f;
 
 	glUniformMatrix4fv(gWorldMatrix, 1, GL_TRUE, &world.m[0][0]);
 
