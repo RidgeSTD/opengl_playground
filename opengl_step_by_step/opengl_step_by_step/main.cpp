@@ -9,7 +9,7 @@
 #include "includes/ogldev_math_3d.h"
 
 GLuint VBO;
-GLuint gScaleLocation; // 位置中间变量
+GLuint gWorldMatrix; // 转移矩阵
 
 const char* pVSFileName = "shader.vs";
 const char* pFSFileName = "shader.fs";
@@ -18,11 +18,17 @@ static void RenderSceneCB()
 {
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	// 维护一个不断慢慢增大的静态浮点数
 	static float Scale = 0.0f;
-	Scale += 0.001f;
+	Scale += 0.004f;
 	// 将值传递给shader
-	glUniform1f(gScaleLocation, fabsf(sinf(Scale)));
+	Matrix4f world;
+
+	world.m[0][0] = 1.0f; world.m[0][1] = 0.0f; world.m[0][2] = 0.0f; world.m[0][3] = sinf(Scale);
+	world.m[1][0] = 0.0f; world.m[1][1] = 1.0f; world.m[1][2] = 0.0f; world.m[1][3] = 0.0f;
+	world.m[2][0] = 0.0f; world.m[2][1] = 0.0f; world.m[2][2] = 1.0f; world.m[2][3] = 0.0f;
+	world.m[3][0] = 0.0f; world.m[3][1] = 0.0f; world.m[3][2] = 0.0f; world.m[3][3] = 1.0f;
+
+	glUniformMatrix4fv(gWorldMatrix, 1, GL_TRUE, &world.m[0][0]);
 
 	glEnableVertexAttribArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
@@ -45,9 +51,9 @@ static void InitializeGlutCallbacks()
 static void CreateVertexBuffer()
 {
 	Vector3f Vertices[3];
-	Vertices[0] = Vector3f(-1.0f, -1.0f, 0.0f);
-	Vertices[1] = Vector3f(1.0f, -1.0f, 0.0f);
-	Vertices[2] = Vector3f(0.0f, 1.0f, 0.0f);
+	Vertices[0] = Vector3f(-0.5f, -0.5f, 0.0f);
+	Vertices[1] = Vector3f(0.5f, -0.5f, 0.0f);
+	Vertices[2] = Vector3f(0.0f, 0.5f, 0.0f);
 
 	glGenBuffers(1, &VBO);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
@@ -124,9 +130,9 @@ static void CompileShaders() {
 	glUseProgram(ShaderProgram);
 
 	// 查询获取一致变量的位置
-	gScaleLocation = glGetUniformLocation(ShaderProgram, "gScale");
+	gWorldMatrix = glGetUniformLocation(ShaderProgram, "gWorld");
 	// 检查错误
-	assert(gScaleLocation != 0xFFFFFFFF);
+	assert(gWorldMatrix != 0xFFFFFFFF);
 }
 
 int main(int argc, char** argv)

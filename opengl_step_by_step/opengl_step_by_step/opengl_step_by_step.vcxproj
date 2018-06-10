@@ -128,7 +128,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="main2.cpp" />
+    <ClCompile Include="main.cpp" />
     <ClCompile Include="ogldev_util.cpp" />
   </ItemGroup>
   <ItemGroup>
