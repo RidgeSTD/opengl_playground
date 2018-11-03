@@ -1,5 +1,5 @@
 # opengl_playground
 
-a start up toy proj according to [OpenGL Step by Step](http://ogldev.atspace.co.uk/)
+a start up toy proj according to [opengl-tutorial](http://www.opengl-tutorial.org), uses opengl 3.3+
 
-or chinese version: [一步步学OpenGL3.3+](https://blog.csdn.net/column/details/13062.html)
+or chinese version: [opengl-tutorial](http://www.opengl-tutorial.org/cn/)
