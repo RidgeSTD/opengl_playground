@@ -1,0 +1,15 @@
+#version 330 core
+
+// Input vertex data, different for all executions of this shader.
+// layout(location=??)用来标明是第几个attribute
+// 配合opengl方面的glvertexAttribPointer可以告知OpenGL这是什么类型的属性
+// glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &v)可以查看最大属性编号
+layout(location = 0) in vec3 vertexPosition_modelspace;
+
+void main(){
+// 在Vertex Shader里至少要计算gl_Position
+    gl_Position.xyz = vertexPosition_modelspace;
+    gl_Position.w = 1.0;
+
+}
+
