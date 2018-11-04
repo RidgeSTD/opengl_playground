@@ -7,9 +7,10 @@
 GLFWwindow* window;
 
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+using namespace glm;
 
 #include "common/shader.hpp"
-using namespace glm;
 
 // An array of 3 vectors which represents 3 vertices
 static const GLfloat g_vertex_buffer_data[] = {
@@ -74,7 +75,18 @@ int main(void)
 
 	GLuint programID = LoadShaders("SimpleVertexShader.vertexshader", "SimpleFragmentShader.fragmentshader");
 
-
+	// 加入MVP进行摄影机透视
+	// 物体放在原点不动
+	mat4 model = mat4(1.0f);
+	mat4 view = glm::lookAt(
+		glm::vec3(4, 3, 3), // Camera is at (4,3,3), in World Space
+		glm::vec3(0, 0, 0), // and looks at the origin
+		glm::vec3(0, 1, 0)  // Head is up (set to 0,-1,0 to look upside-down)
+	);
+	mat4 project = glm::perspective(glm::radians(45.0f), 4.0f/3.0f, 0.1f, 10.0f);
+	mat4 MVP = project * view * model;
+	GLuint mvp_id = glGetUniformLocation(programID, "MVP");
+	
 	do {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -84,6 +96,9 @@ int main(void)
 		glEnableVertexAttribArray(0);
 		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+
+		glUniformMatrix4fv(mvp_id, 1, GL_FALSE, &MVP[0][0]);
+
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 		glDisableVertexAttribArray(0);
 
