@@ -6,7 +6,7 @@ out vec3 color;
 void main()
 {
 
-	// Output color = red 
-	color = vec3(1,0,0);
+	// Output color = white 
+	color = vec3(1,1,1);
 
 }
