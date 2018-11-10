@@ -6,15 +6,21 @@
 // glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &v)可以查看最大属性编号
 layout(location = 0) in vec3 vertexPosition_modelspace;
 
+layout(location = 1) in vec3 vertexColor;
+
 // Uniform变量是shader中只能用不能改的从外部(OpenGL)传入的“常量”
 // attribute 只能在vertex shader中使用，fragment里不行
 // 通常存顶点坐标、法线、纹理坐标、纹理颜色等
 uniform mat4 MVP;
+
+//  这个会自动在每个Fragment着色器中获得
+out vec3 fragmentColor;
 
 
 void main(){
 // 在Vertex Shader里至少要计算gl_Position
     gl_Position = MVP * vec4(vertexPosition_modelspace, 1.0);
 
+	fragmentColor = vertexColor;
 }
 
