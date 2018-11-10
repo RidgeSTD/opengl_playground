@@ -52,8 +52,20 @@ static const GLfloat g_vertex_buffer_data[] = {
 	1.0f,-1.0f, 1.0f
 };
 
+static const GLfloat triangle_vertex_buffer_data[] = {
+	-1.5f,-1.5f,0.0f, // triangle 1 : begin
+	1.5f,-1.5f, 0.0f,
+	1.5f, 1.5f, 0.0f, // triangle 1 : end
+};
+
+static const GLfloat g_color_buffer_data_triangle[] = {
+	-1.5f,-1.5f,0.0f, // triangle 1 : begin
+	1.5f,-1.5f, 0.0f,
+	1.5f, 1.5f, 0.0f, // triangle 1 : end
+};
+
 // One color for each vertex. They were generated randomly.
-static const GLfloat g_color_buffer_data[] = {
+static GLfloat g_color_buffer_data[] = {
 	0.583f,  0.771f,  0.014f,
 	0.609f,  0.115f,  0.436f,
 	0.327f,  0.483f,  0.844f,
@@ -150,31 +162,43 @@ int main(void)
 	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
 
+	GLuint vertexbuffer_triangle;
+	glGenBuffers(1, &vertexbuffer_triangle);
+	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer_triangle);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(triangle_vertex_buffer_data), triangle_vertex_buffer_data, GL_STATIC_DRAW);
+
 	GLuint programID = LoadShaders("SimpleVertexShader.vertexshader", "SimpleFragmentShader.fragmentshader");
 
 	// 加入MVP进行摄影机透视
 	// 物体放在原点不动
 	mat4 model = mat4(1.0f);
 	mat4 view = glm::lookAt(
-		glm::vec3(4, 3, 3), // Camera is at (4,3,3), in World Space
+		glm::vec3(3, 4, 5), // Camera is at (4,3,3), in World Space
 		glm::vec3(0, 0, 0), // and looks at the origin
 		glm::vec3(0, 1, 0)  // Head is up (set to 0,-1,0 to look upside-down)
 	);
-	mat4 project = glm::perspective(glm::radians(45.0f), 4.0f/3.0f, 0.1f, 10.0f);
+	mat4 project = glm::perspective(glm::radians(90.0f), 4.0f/3.0f, 0.1f, 20.0f);
 	mat4 MVP = project * view * model;
+
+	mat4 model2 = mat4(1, 0, 0, 1,
+						0, 1, 0, 0,
+						0, 0, 1, 3,
+						0, 0, 0, 1);
+	mat4 MVP2 = project * view * model2;
+
 	GLuint mvp_id = glGetUniformLocation(programID, "MVP");
 
 	// 加入颜色
 	GLuint colorBuffer;
 	glGenBuffers(1, &colorBuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, colorBuffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
-	
+
 	do {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		glUseProgram(programID);
 
+		// draw cube
 		glEnableVertexAttribArray(0);
 		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
@@ -186,6 +210,28 @@ int main(void)
 		glUniformMatrix4fv(mvp_id, 1, GL_FALSE, &MVP[0][0]);
 
 		glDrawArrays(GL_TRIANGLES, 0, 3 * 12);
+		glDisableVertexAttribArray(0);
+
+		// draw triangle
+		glEnableVertexAttribArray(0);
+		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer_triangle);
+		g_color_buffer_data[64] += 0.002f;
+		if (g_color_buffer_data[64] >=1.0f)
+		{
+			g_color_buffer_data[64] -= 1.0f;
+		}
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+
+		glEnableVertexAttribArray(1);
+		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer_triangle);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+
+		glBindBuffer(GL_ARRAY_BUFFER, colorBuffer);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(g_color_buffer_data), g_color_buffer_data, GL_STATIC_DRAW);
+
+		glUniformMatrix4fv(mvp_id, 1, GL_FALSE, &MVP2[0][0]);
+
+		glDrawArrays(GL_TRIANGLES, 0, 3);
 		glDisableVertexAttribArray(0);
 
 		// Swap buffers
