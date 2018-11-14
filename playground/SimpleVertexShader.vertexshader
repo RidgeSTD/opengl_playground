@@ -5,8 +5,7 @@
 // 配合opengl方面的glvertexAttribPointer可以告知OpenGL这是什么类型的属性
 // glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &v)可以查看最大属性编号
 layout(location = 0) in vec3 vertexPosition_modelspace;
-
-layout(location = 1) in vec3 vertexColor;
+layout(location = 1) in vec2 vertexUV;
 
 // Uniform变量是shader中只能用不能改的从外部(OpenGL)传入的“常量”
 // attribute 只能在vertex shader中使用，fragment里不行
@@ -14,13 +13,16 @@ layout(location = 1) in vec3 vertexColor;
 uniform mat4 MVP;
 
 //  这个会自动在每个Fragment着色器中获得
-out vec3 fragmentColor;
+// 将纹理中的坐标uv传过去
+out vec2 uv;
 
 
 void main(){
-// 在Vertex Shader里至少要计算gl_Position
+	// 在Vertex Shader里至少要计算gl_Position
     gl_Position = MVP * vec4(vertexPosition_modelspace, 1.0);
 
-	fragmentColor = vertexColor;
+	// 如果使用DDS纹理，因为DirectX与TGA的纵坐标v方向相反，因此在定点着色器应该反过来
+	//uv = vertexUV;
+	uv = vec2(vertexUV[0], 1 - vertexUV[1]);
 }
 
