@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <vector>
 
 #include <GL/glew.h>
 
@@ -12,88 +13,9 @@ using namespace glm;
 
 #include "common/shader.hpp"
 #include "common/texture.hpp"
-
 #include "common/controls.hpp"
+#include "common/myobjloader.hpp"
 
-// 定义立方体顶点坐标
-static const GLfloat g_vertex_buffer_data[] = {
-	-1.0f,-1.0f,-1.0f, // triangle 1 : begin
-	-1.0f,-1.0f, 1.0f,
-	-1.0f, 1.0f, 1.0f, // triangle 1 : end
-	1.0f, 1.0f,-1.0f, // triangle 2 : begin
-	-1.0f,-1.0f,-1.0f,
-	-1.0f, 1.0f,-1.0f, // triangle 2 : end
-	1.0f,-1.0f, 1.0f,
-	-1.0f,-1.0f,-1.0f,
-	1.0f,-1.0f,-1.0f,
-	1.0f, 1.0f,-1.0f,
-	1.0f,-1.0f,-1.0f,
-	-1.0f,-1.0f,-1.0f,
-	-1.0f,-1.0f,-1.0f,
-	-1.0f, 1.0f, 1.0f,
-	-1.0f, 1.0f,-1.0f,
-	1.0f,-1.0f, 1.0f,
-	-1.0f,-1.0f, 1.0f,
-	-1.0f,-1.0f,-1.0f,
-	-1.0f, 1.0f, 1.0f,
-	-1.0f,-1.0f, 1.0f,
-	1.0f,-1.0f, 1.0f,
-	1.0f, 1.0f, 1.0f,
-	1.0f,-1.0f,-1.0f,
-	1.0f, 1.0f,-1.0f,
-	1.0f,-1.0f,-1.0f,
-	1.0f, 1.0f, 1.0f,
-	1.0f,-1.0f, 1.0f,
-	1.0f, 1.0f, 1.0f,
-	1.0f, 1.0f,-1.0f,
-	-1.0f, 1.0f,-1.0f,
-	1.0f, 1.0f, 1.0f,
-	-1.0f, 1.0f,-1.0f,
-	-1.0f, 1.0f, 1.0f,
-	1.0f, 1.0f, 1.0f,
-	-1.0f, 1.0f, 1.0f,
-	1.0f,-1.0f, 1.0f
-};
-
-// 纹理位置
-static const GLfloat g_uv_buffer_data[] = {
-	0.000059f, 1.0f - 0.000004f,
-	0.000103f, 1.0f - 0.336048f,
-	0.335973f, 1.0f - 0.335903f,
-	1.000023f, 1.0f - 0.000013f,
-	0.667979f, 1.0f - 0.335851f,
-	0.999958f, 1.0f - 0.336064f,
-	0.667979f, 1.0f - 0.335851f,
-	0.336024f, 1.0f - 0.671877f,
-	0.667969f, 1.0f - 0.671889f,
-	1.000023f, 1.0f - 0.000013f,
-	0.668104f, 1.0f - 0.000013f,
-	0.667979f, 1.0f - 0.335851f,
-	0.000059f, 1.0f - 0.000004f,
-	0.335973f, 1.0f - 0.335903f,
-	0.336098f, 1.0f - 0.000071f,
-	0.667979f, 1.0f - 0.335851f,
-	0.335973f, 1.0f - 0.335903f,
-	0.336024f, 1.0f - 0.671877f,
-	1.000004f, 1.0f - 0.671847f,
-	0.999958f, 1.0f - 0.336064f,
-	0.667979f, 1.0f - 0.335851f,
-	0.668104f, 1.0f - 0.000013f,
-	0.335973f, 1.0f - 0.335903f,
-	0.667979f, 1.0f - 0.335851f,
-	0.335973f, 1.0f - 0.335903f,
-	0.668104f, 1.0f - 0.000013f,
-	0.336098f, 1.0f - 0.000071f,
-	0.000103f, 1.0f - 0.336048f,
-	0.000004f, 1.0f - 0.671870f,
-	0.336024f, 1.0f - 0.671877f,
-	0.000103f, 1.0f - 0.336048f,
-	0.336024f, 1.0f - 0.671877f,
-	0.335973f, 1.0f - 0.335903f,
-	0.667969f, 1.0f - 0.671889f,
-	1.000004f, 1.0f - 0.671847f,
-	0.667979f, 1.0f - 0.335851f
-};
 
 int main(void)
 {
@@ -120,6 +42,16 @@ int main(void)
 		return -1;
 	}
 	glfwMakeContextCurrent(window);
+
+	// 加载OBJ信息
+	std::vector<glm::vec3> vertices;
+	std::vector<glm::vec2> uvs;
+	std::vector<glm::vec3> normals;
+	bool res = loadOBJ("cube.obj", vertices, uvs, normals);
+	if (!res) {
+		printf("load object file answered fail, exit!\n");
+		exit(-1);
+	}
 
 	// Initialize GLEW
 	// 请注意，我们在初始化GLEW之前设置glewExperimental变量的值为GL_TRUE，这样做能让GLEW在管理OpenGL的函数指针时更多地使用现代化的技术. 
@@ -151,14 +83,14 @@ int main(void)
 	glGenBuffers(1, &vertexbuffer);
 	// 绑定该缓存并把数据传过去
 	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), &vertices[0], GL_STATIC_DRAW);
 
 	// 加载纹理
 	GLuint texture = loadDDS("uvtemplate.DDS");
 	GLuint uvBuffer;
 	glGenBuffers(1, &uvBuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, uvBuffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(g_uv_buffer_data), g_uv_buffer_data, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * uvs.size(), &uvs[0], GL_STATIC_DRAW);
 
 	GLuint programID = LoadShaders("SimpleVertexShader.vertexshader", "SimpleFragmentShader.fragmentshader");
 

@@ -5,7 +5,7 @@
 
 #include <glm/glm.hpp>
 
-#include "objloader.hpp"
+#include "myobjloader.hpp"
 
 bool loadOBJ(
 	const char *path,
@@ -79,7 +79,7 @@ bool loadOBJ(
 	}
 
 	// 使用索引反向找到真实数据放到输出buffer中
-	for (unsigned int i = 0; i < normalIndices.size; i++)
+	for (unsigned int i = 0; i < normalIndices.size(); i++)
 	{
 		// 减一是因为OBJ文件下标从1开始
 		out_normals.push_back(temp_normals[normalIndices[i] - 1]);
