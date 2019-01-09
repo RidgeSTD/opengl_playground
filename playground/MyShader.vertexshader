@@ -14,7 +14,7 @@ layout(location = 2) in vec3 vertexNormal_modelspace;
 uniform mat4 MVP;
 uniform mat4 V;
 uniform mat4 M;
-uniform vec3 lightPosition_modelspace;
+uniform vec3 lightPosition_worldspace;
 
 
 //  这个会自动在每个Fragment着色器中获得
@@ -24,7 +24,7 @@ uniform vec3 lightPosition_modelspace;
 // 法线方向
 // 光线方向
 out vec2 uv;
-out vec3 position_worldspace;
+out vec3 vertexPosition_worldspace;
 out vec3 eyeDirection_cameraspace;
 out vec3 normalDirection_cameraspace;
 out vec3 lightDirection_cameraspace;
@@ -37,5 +37,11 @@ void main(){
 	// 如果使用DDS纹理，因为DirectX与TGA的纵坐标v方向相反，因此在定点着色器应该反过来
 	//uv = vertexUV;
 	uv = vec2(vertexUV[0], 1 - vertexUV[1]);
-}
+	vertexPosition_worldspace = (M * vec4(vertexPosition_modelspace, 1)).xyz;
 
+	vec3 vertexPosition_cameraspace = (V * vec4(vertexPosition_worldspace, 1)).xyz;
+	eyeDirection_cameraspace = vec3(0, 0, 0) - vertexPosition_cameraspace;
+
+	normalDirection_cameraspace = (V * M * vec4(vertexNormal_modelspace, 0)).xyz;
+	lightDirection_cameraspace = (V * vec4(lightPosition_worldspace, 1)).xyz - vertexPosition_cameraspace; 
+}
