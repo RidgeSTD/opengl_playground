@@ -23,7 +23,7 @@ bool loadOBJ(
 	FILE* file = fopen(path, "r");
 	if (file == NULL)
 	{
-		printf("Cannot open file %s!\n", path);
+		printf("Cannot open file %s!\n Press any key to continue...", path);
 		getchar();
 		return false;
 	}

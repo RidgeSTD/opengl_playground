@@ -1,27 +1,40 @@
 #version 330 core
 
 // Input vertex data, different for all executions of this shader.
-// layout(location=??)ÓÃÀ´±êÃ÷ÊÇµÚ¼¸¸öattribute
-// ÅäºÏopengl·½ÃæµÄglvertexAttribPointer¿ÉÒÔ¸æÖªOpenGLÕâÊÇÊ²Ã´ÀàĞÍµÄÊôĞÔ
-// glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &v)¿ÉÒÔ²é¿´×î´óÊôĞÔ±àºÅ
+// layout(location=??)ç”¨æ¥æ ‡æ˜æ˜¯ç¬¬å‡ ä¸ªattribute
+// é…åˆopenglæ–¹é¢çš„glvertexAttribPointerå¯ä»¥å‘ŠçŸ¥OpenGLè¿™æ˜¯ä»€ä¹ˆç±»å‹çš„å±æ€§
+// glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &v)å¯ä»¥æŸ¥çœ‹æœ€å¤§å±æ€§ç¼–å·
 layout(location = 0) in vec3 vertexPosition_modelspace;
 layout(location = 1) in vec2 vertexUV;
+layout(location = 2) in vec3 vertexNormal_modelspace;
 
-// Uniform±äÁ¿ÊÇshaderÖĞÖ»ÄÜÓÃ²»ÄÜ¸ÄµÄ´ÓÍâ²¿(OpenGL)´«ÈëµÄ¡°³£Á¿¡±
-// attribute Ö»ÄÜÔÚvertex shaderÖĞÊ¹ÓÃ£¬fragmentÀï²»ĞĞ
-// Í¨³£´æ¶¥µã×ø±ê¡¢·¨Ïß¡¢ÎÆÀí×ø±ê¡¢ÎÆÀíÑÕÉ«µÈ
+// Uniformå˜é‡æ˜¯shaderä¸­åªèƒ½ç”¨ä¸èƒ½æ”¹çš„ä»å¤–éƒ¨(OpenGL)ä¼ å…¥çš„â€œå¸¸é‡â€
+// attribute åªèƒ½åœ¨vertex shaderä¸­ä½¿ç”¨ï¼Œfragmenté‡Œä¸è¡Œ
+// é€šå¸¸å­˜é¡¶ç‚¹åæ ‡ã€æ³•çº¿ã€çº¹ç†åæ ‡ã€çº¹ç†é¢œè‰²ç­‰
 uniform mat4 MVP;
+uniform mat4 V;
+uniform mat4 M;
+uniform vec3 lightPosition_modelspace
 
-//  Õâ¸ö»á×Ô¶¯ÔÚÃ¿¸öFragment×ÅÉ«Æ÷ÖĞ»ñµÃ
-// ½«ÎÆÀíÖĞµÄ×ø±êuv´«¹ıÈ¥
+
+//  è¿™ä¸ªä¼šè‡ªåŠ¨åœ¨æ¯ä¸ªFragmentç€è‰²å™¨ä¸­è·å¾—
+// å°†çº¹ç†ä¸­çš„åæ ‡uvä¼ è¿‡å»
+// é¡¶ç‚¹ä½ç½®
+// è§†çº¿æ–¹å‘
+// æ³•çº¿æ–¹å‘
+// å…‰çº¿æ–¹å‘
 out vec2 uv;
+out vec3 position_worldspace;
+out vec3 eyeDirection_cameraspace;
+out vec3 normalDirection_cameraspace;
+out vec3 lightDirection_cameraspace;
 
 
 void main(){
-	// ÔÚVertex ShaderÀïÖÁÉÙÒª¼ÆËãgl_Position
+	// åœ¨Vertex Shaderé‡Œè‡³å°‘è¦è®¡ç®—gl_Position
     gl_Position = MVP * vec4(vertexPosition_modelspace, 1.0);
 
-	// Èç¹ûÊ¹ÓÃDDSÎÆÀí£¬ÒòÎªDirectXÓëTGAµÄ×İ×ø±êv·½ÏòÏà·´£¬Òò´ËÔÚ¶¨µã×ÅÉ«Æ÷Ó¦¸Ã·´¹ıÀ´
+	// å¦‚æœä½¿ç”¨DDSçº¹ç†ï¼Œå› ä¸ºDirectXä¸TGAçš„çºµåæ ‡væ–¹å‘ç›¸åï¼Œå› æ­¤åœ¨å®šç‚¹ç€è‰²å™¨åº”è¯¥åè¿‡æ¥
 	//uv = vertexUV;
 	uv = vec2(vertexUV[0], 1 - vertexUV[1]);
 }

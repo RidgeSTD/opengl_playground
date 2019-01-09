@@ -1,15 +1,21 @@
 #version 330 core
 
 in vec2 uv;
+in vec3 position_worldspace;
+in vec3 eyeDirection_cameraspace;
+in vec3 normalDirection_cameraspace;
+in vec3 lightDirection_cameraspace;
 
 // Ouput data
 out vec3 color;
 
 uniform sampler2D textureSampler;
+uniform mat4 MV;
+uniform vec3 LightPosition_worldspace;
 
 void main()
 {
 
-	// Output color = white 
+	// Output color = white
 	color = texture(textureSampler, uv).rgb;
 }

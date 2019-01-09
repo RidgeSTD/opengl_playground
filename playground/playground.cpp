@@ -5,7 +5,7 @@
 #include <GL/glew.h>
 
 #include <GLFW/glfw3.h>
-GLFWwindow* window;
+GLFWwindow *window;
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -15,7 +15,6 @@ using namespace glm;
 #include "common/texture.hpp"
 #include "common/controls.hpp"
 #include "common/myobjloader.hpp"
-
 
 int main(void)
 {
@@ -35,7 +34,8 @@ int main(void)
 
 	// Open a window and create its OpenGL context
 	window = glfwCreateWindow(1024, 768, "Playground", NULL, NULL);
-	if (window == NULL) {
+	if (window == NULL)
+	{
 		fprintf(stderr, "Failed to open GLFW window. If you have an Intel GPU, they are not 3.3 compatible. Try the 2.1 version of the tutorials.\n");
 		getchar();
 		glfwTerminate();
@@ -43,21 +43,23 @@ int main(void)
 	}
 	glfwMakeContextCurrent(window);
 
-	// ¼ÓÔØOBJĞÅÏ¢
+	// åŠ è½½OBJä¿¡æ¯
 	std::vector<glm::vec3> vertices;
 	std::vector<glm::vec2> uvs;
 	std::vector<glm::vec3> normals;
-	bool res = loadOBJ("cube.obj", vertices, uvs, normals);
-	if (!res) {
+	bool res = loadOBJ("suzanne.obj", vertices, uvs, normals);
+	if (!res)
+	{
 		printf("load object file answered fail, exit!\n");
 		exit(-1);
 	}
 
 	// Initialize GLEW
-	// Çë×¢Òâ£¬ÎÒÃÇÔÚ³õÊ¼»¯GLEWÖ®Ç°ÉèÖÃglewExperimental±äÁ¿µÄÖµÎªGL_TRUE£¬ÕâÑù×öÄÜÈÃGLEWÔÚ¹ÜÀíOpenGLµÄº¯ÊıÖ¸ÕëÊ±¸ü¶àµØÊ¹ÓÃÏÖ´ú»¯µÄ¼¼Êõ. 
-	// Èç¹û°ÑËüÉèÖÃÎªGL_FALSEµÄ»°¿ÉÄÜ»áÔÚÊ¹ÓÃOpenGLµÄºËĞÄÄ£Ê½Ê±³öÏÖÒ»Ğ©ÎÊÌâ¡£
+	// è¯·æ³¨æ„ï¼Œæˆ‘ä»¬åœ¨åˆå§‹åŒ–GLEWä¹‹å‰è®¾ç½®glewExperimentalå˜é‡çš„å€¼ä¸ºGL_TRUEï¼Œè¿™æ ·åšèƒ½è®©GLEWåœ¨ç®¡ç†OpenGLçš„å‡½æ•°æŒ‡é’ˆæ—¶æ›´å¤šåœ°ä½¿ç”¨ç°ä»£åŒ–çš„æŠ€æœ¯.
+	// å¦‚æœæŠŠå®ƒè®¾ç½®ä¸ºGL_FALSEçš„è¯å¯èƒ½ä¼šåœ¨ä½¿ç”¨OpenGLçš„æ ¸å¿ƒæ¨¡å¼æ—¶å‡ºç°ä¸€äº›é—®é¢˜ã€‚
 	glewExperimental = true;
-	if (glewInit() != GLEW_OK) {
+	if (glewInit() != GLEW_OK)
+	{
 		fprintf(stderr, "Failed to initialize GLEW\n");
 		getchar();
 		glfwTerminate();
@@ -71,7 +73,7 @@ int main(void)
 	// Dark blue background
 	glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
 	glEnable(GL_DEPTH_TEST);
-	//Èç¹ûÒ»¸ö¶Î±ÈÖ®Ç°µÄÄ³Ò»¸ö¸ü½Ó½üÏà»úÔò½ÓÊÜËü
+	//å¦‚æœä¸€ä¸ªæ®µæ¯”ä¹‹å‰çš„æŸä¸€ä¸ªæ›´æ¥è¿‘ç›¸æœºåˆ™æ¥å—å®ƒ
 	glDepthFunc(GL_LESS);
 
 	GLuint VertexArrayID;
@@ -79,14 +81,20 @@ int main(void)
 	glBindVertexArray(VertexArrayID);
 
 	GLuint vertexbuffer;
-	// ÉêÇëÏÔ´æ
+	// ç”³è¯·æ˜¾å­˜
 	glGenBuffers(1, &vertexbuffer);
-	// °ó¶¨¸Ã»º´æ²¢°ÑÊı¾İ´«¹ıÈ¥
+	// ç»‘å®šè¯¥ç¼“å­˜å¹¶æŠŠæ•°æ®ä¼ è¿‡å»
 	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
 	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), &vertices[0], GL_STATIC_DRAW);
 
-	// ¼ÓÔØÎÆÀí
-	GLuint texture = loadDDS("uvtemplate.DDS");
+	// åŠ è½½æ³•å‘é‡å¹¶å¤åˆ¶åˆ°ç¼“å­˜åŒº
+	GLuint normalBuffer;
+	glGenBuffers(1, &normalBuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, normalBuffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * normals.size(), &normals[0], GL_STATIC_DRAW);
+
+	// åŠ è½½çº¹ç†
+	GLuint texture = loadDDS("uvmap.DDS");
 	GLuint uvBuffer;
 	glGenBuffers(1, &uvBuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, uvBuffer);
@@ -94,49 +102,72 @@ int main(void)
 
 	GLuint programID = LoadShaders("SimpleVertexShader.vertexshader", "SimpleFragmentShader.fragmentshader");
 
-	// ¼ÓÈëMVP½øĞĞÉãÓ°»úÍ¸ÊÓ
-	// ÎïÌå·ÅÔÚÔ­µã²»¶¯
-	mat4 model = mat4(1.0f);
+	// åŠ å…¥MVPè¿›è¡Œæ‘„å½±æœºé€è§†
+	// ç‰©ä½“æ”¾åœ¨åŸç‚¹ä¸åŠ¨
+	mat4 modelMatrix = mat4(1.0f);
 	GLuint mvp_id = glGetUniformLocation(programID, "MVP");
+	GLuint model_id = glGetUniformLocation(programID, "M");
+	GLuint view_id = glGetUniformLocation(programID, "V");
+
+	// å‡†å¤‡å…‰æºä¿¡æ¯
+	GLuint lightId = glGetUniformLocation(programID, "LightPosition_worldspace");
+	glm::vec3 lightPos;
 
 	GLuint sampler_id = glGetUniformLocation(programID, "textureSampler");
-	mat4 MVP;
+	mat4 MVP, viewMatrix;
 
-	do {
+	do
+	{
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		glUseProgram(programID);
 
-		// draw cube
+		computeMatricesFromInputs();
+
+		// å°†çŸ©é˜µä¼ åˆ°æ˜¾å¡bufferä¸­
 		glEnableVertexAttribArray(0);
 		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void *)0);
 
 		glEnableVertexAttribArray(1);
 		glBindBuffer(GL_ARRAY_BUFFER, uvBuffer);
-		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
+		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (void *)0);
 
-		
+		glEnableVertexAttribArray(2);
+		glBindBuffer(GL_ARRAY_BUFFER, normalBuffer);
+		glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, (void *)0);
+
 		// appint the texture sampler
-		// Ä¬ÈÏÇé¿ö0ºÅ¾ÍÊÇ¼¤»îµÄ£¬ÕâÀïÖ»ÊÇÏÔÊ½µÄµ÷ÓÃÒ»´Î
-		// ÎÆÀíµ¥ÔªµÄ±àºÅ¿ÉÒÔÍ¨¹ı×ÅÉ«Æ÷·ÃÎÊµ½
-		// ¿ÉÒÔ¿´¼ûÕâÀïÉè¶¨ÁËuniform¸æÖª×ÅÉ«Æ÷Ê¹ÓÃÄÇ¸öTexture Unit
+		// é»˜è®¤æƒ…å†µ0å·å°±æ˜¯æ¿€æ´»çš„ï¼Œè¿™é‡Œåªæ˜¯æ˜¾å¼çš„è°ƒç”¨ä¸€æ¬¡
+		// çº¹ç†å•å…ƒçš„ç¼–å·å¯ä»¥é€šè¿‡ç€è‰²å™¨è®¿é—®åˆ°
+		// å¯ä»¥çœ‹è§è¿™é‡Œè®¾å®šäº†uniformå‘ŠçŸ¥ç€è‰²å™¨ä½¿ç”¨é‚£ä¸ªTexture Unit
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texture);
-		// ÎÆÀíµÄ²ÉÑù´¦Àí
+		// çº¹ç†çš„é‡‡æ ·å¤„ç†
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 		glGenerateMipmap(GL_TEXTURE_2D);
 		glUniform1i(sampler_id, 0);
 
-		// ¼ÆËãĞÂµÄMVP¾ØÕó´«¸ø×ÅÉ«Æ÷
-		// TODO: ¼ÓÈë¼üÅÌÊó±ê¶ÁÈë£¬¼ÆËãĞÂµÄP, V¾ØÕó
-		computeMatricesFromInputs();
-		MVP = getProjectionMatrix() * getViewMatrix() * model;
+		// è®¡ç®—æ–°çš„MVPçŸ©é˜µä¼ ç»™ç€è‰²å™¨
+		// TODO: åŠ å…¥é”®ç›˜é¼ æ ‡è¯»å…¥ï¼Œè®¡ç®—æ–°çš„P, VçŸ©é˜µ
+		viewMatrix = getViewMatrix();
+		MVP = getProjectionMatrix() * viewMatrix * modelMatrix;
 		glUniformMatrix4fv(mvp_id, 1, GL_FALSE, &MVP[0][0]);
 
+		// å°†æ¨¡å‹å’Œè§†è§’çŸ©é˜µä¹Ÿä¼ ç»™æ˜¾å¡ï¼Œå› ä¸ºç€è‰²å™¨éœ€è¦æ¨¡å‹è¡¨é¢çš„å‘é‡å’Œè§†çº¿æ–¹å‘
+		glUniformMatrix4fv(model_id, 1, GL_FALSE, &modelMatrix[0][0]);
+		glUniformMatrix4fv(view_id, 1, GL_FALSE, &viewMatrix[0][0]);
+
+		// å¤„ç†å…‰æºä¿¡æ¯
+		lightPos = glm::vec3(4, 4, 4); // ä¸€ä¸ªé™æ€å…‰æº
+		glUniform3f(lightId, lightPos.x, lightPos.y, lightPos.z);
+
+		// è°ƒç”¨ç»˜åˆ¶å‘½ä»¤
 		glDrawArrays(GL_TRIANGLES, 0, 3 * 12);
 		glDisableVertexAttribArray(0);
+		glDisableVertexAttribArray(1);
+		glDisableVertexAttribArray(2);
 
 		// Swap buffers
 		glfwSwapBuffers(window);
@@ -144,11 +175,13 @@ int main(void)
 
 	} // Check if the ESC key was pressed or the window was closed
 	while (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS &&
-		glfwWindowShouldClose(window) == 0);
-
+		   glfwWindowShouldClose(window) == 0);
 
 	//clean up
 	glDeleteBuffers(1, &vertexbuffer);
+	glDeleteBuffers(1, &uvBuffer);
+	glDeleteBuffers(1, &normalBuffer);
+	glDeleteTextures(1, &texture);
 	glDeleteVertexArrays(1, &VertexArrayID);
 	//glDeleteProgram(programID);
 
