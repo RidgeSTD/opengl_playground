@@ -83,7 +83,7 @@ int main(void)
 	glBindVertexArray(VertexArrayID);
 
 	// Create and compile our GLSL program from the shaders
-	GLuint programID = LoadShaders("MyShader.vertexshader", "MyShader.fragmentshader");
+	GLuint programID = LoadShaders("MyShader.vert", "MyShader.frag");
 
 	// Get a handle for our "MVP" uniform
 	GLuint MatrixID = glGetUniformLocation(programID, "MVP");
@@ -93,8 +93,8 @@ int main(void)
 	// Load the texture
 	GLuint Texture = loadDDS("uvmap.DDS");
 
-	// Get a handle for our "myTextureSampler" uniform
-	GLuint TextureID = glGetUniformLocation(programID, "myTextureSampler");
+	// Get a handle for our "textureSampler" uniform
+	GLuint TextureID = glGetUniformLocation(programID, "textureSampler");
 
 	// Read our .obj file
 	std::vector<glm::vec3> vertices;
@@ -121,7 +121,11 @@ int main(void)
 
 	// Get a handle for our "LightPosition" uniform
 	glUseProgram(programID);
-	GLuint LightID = glGetUniformLocation(programID, "LightPosition_worldspace");
+	GLuint LightID = glGetUniformLocation(programID, "lightPosition_worldspace");
+
+	// 设置光强，光色
+	glUniform3f(glGetUniformLocation(programID, "lightColor"), 1.f, 1.f, 1.f); // white light
+	glUniform1f(glGetUniformLocation(programID, "lightPower"), 50.f);		   // white light
 
 	do
 	{

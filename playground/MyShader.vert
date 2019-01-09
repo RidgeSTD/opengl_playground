@@ -39,9 +39,9 @@ void main(){
 	uv = vec2(vertexUV[0], 1 - vertexUV[1]);
 	vertexPosition_worldspace = (M * vec4(vertexPosition_modelspace, 1)).xyz;
 
-	vec3 vertexPosition_cameraspace = (V * vec4(vertexPosition_worldspace, 1)).xyz;
-	eyeDirection_cameraspace = vec3(0, 0, 0) - vertexPosition_cameraspace;
+	vec3 vertexPosition_cameraspace = (V * vec4(vertexPosition_modelspace, 1)).xyz;
+	lightDirection_cameraspace = normalize((V * vec4(lightPosition_worldspace, 1)).xyz - vertexPosition_cameraspace); 
+	eyeDirection_cameraspace = normalize(vec3(0, 0, 0) - vertexPosition_cameraspace);
 
-	normalDirection_cameraspace = (V * M * vec4(vertexNormal_modelspace, 0)).xyz;
-	lightDirection_cameraspace = (V * vec4(lightPosition_worldspace, 1)).xyz - vertexPosition_cameraspace; 
+	normalDirection_cameraspace = normalize((V * M * vec4(vertexNormal_modelspace, 0)).xyz);
 }
