@@ -1,20 +1,25 @@
+// Include standard headers
 #include <stdio.h>
 #include <stdlib.h>
 #include <vector>
 
+// Include GLEW
 #include <GL/glew.h>
 
+// Include GLFW
 #include <GLFW/glfw3.h>
 GLFWwindow *window;
 
+// Include GLM
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 using namespace glm;
 
-#include "common/shader.hpp"
-#include "common/texture.hpp"
-#include "common/controls.hpp"
-#include "common/myobjloader.hpp"
+#include <common/shader.hpp>
+#include <common/texture.hpp>
+#include <common/controls.hpp>
+#include <common/objloader.hpp>
+#include <common/vboindexer.hpp>
 
 int main(void)
 {
@@ -33,7 +38,7 @@ int main(void)
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	// Open a window and create its OpenGL context
-	window = glfwCreateWindow(1024, 768, "Playground", NULL, NULL);
+	window = glfwCreateWindow(1024, 768, "Tutorial 08 - Basic Shading", NULL, NULL);
 	if (window == NULL)
 	{
 		fprintf(stderr, "Failed to open GLFW window. If you have an Intel GPU, they are not 3.3 compatible. Try the 2.1 version of the tutorials.\n");
@@ -43,21 +48,8 @@ int main(void)
 	}
 	glfwMakeContextCurrent(window);
 
-	// 加载OBJ信息
-	std::vector<glm::vec3> vertices;
-	std::vector<glm::vec2> uvs;
-	std::vector<glm::vec3> normals;
-	bool res = loadOBJ("suzanne.obj", vertices, uvs, normals);
-	if (!res)
-	{
-		printf("load object file answered fail, exit!\n");
-		exit(-1);
-	}
-
 	// Initialize GLEW
-	// 请注意，我们在初始化GLEW之前设置glewExperimental变量的值为GL_TRUE，这样做能让GLEW在管理OpenGL的函数指针时更多地使用现代化的技术.
-	// 如果把它设置为GL_FALSE的话可能会在使用OpenGL的核心模式时出现一些问题。
-	glewExperimental = true;
+	glewExperimental = true; // Needed for core profile
 	if (glewInit() != GLEW_OK)
 	{
 		fprintf(stderr, "Failed to initialize GLEW\n");
@@ -68,103 +60,139 @@ int main(void)
 
 	// Ensure we can capture the escape key being pressed below
 	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
+	// Hide the mouse and enable unlimited mouvement
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-	// initial settings
+	// Set the mouse at the center of the screen
+	glfwPollEvents();
+	glfwSetCursorPos(window, 1024 / 2, 768 / 2);
+
 	// Dark blue background
 	glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
+
+	// Enable depth test
 	glEnable(GL_DEPTH_TEST);
-	//如果一个段比之前的某一个更接近相机则接受它
+	// Accept fragment if it closer to the camera than the former one
 	glDepthFunc(GL_LESS);
+
+	// Cull triangles which normal is not towards the camera
+	glEnable(GL_CULL_FACE);
 
 	GLuint VertexArrayID;
 	glGenVertexArrays(1, &VertexArrayID);
 	glBindVertexArray(VertexArrayID);
 
+	// Create and compile our GLSL program from the shaders
+	GLuint programID = LoadShaders("MyShader.vertexshader", "MyShader.fragmentshader");
+
+	// Get a handle for our "MVP" uniform
+	GLuint MatrixID = glGetUniformLocation(programID, "MVP");
+	GLuint ViewMatrixID = glGetUniformLocation(programID, "V");
+	GLuint ModelMatrixID = glGetUniformLocation(programID, "M");
+
+	// Load the texture
+	GLuint Texture = loadDDS("uvmap.DDS");
+
+	// Get a handle for our "myTextureSampler" uniform
+	GLuint TextureID = glGetUniformLocation(programID, "myTextureSampler");
+
+	// Read our .obj file
+	std::vector<glm::vec3> vertices;
+	std::vector<glm::vec2> uvs;
+	std::vector<glm::vec3> normals;
+	bool res = loadOBJ("suzanne.obj", vertices, uvs, normals);
+
+	// Load it into a VBO
+
 	GLuint vertexbuffer;
-	// 申请显存
 	glGenBuffers(1, &vertexbuffer);
-	// 绑定该缓存并把数据传过去
 	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
 	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), &vertices[0], GL_STATIC_DRAW);
 
-	// 加载法向量并复制到缓存区
-	GLuint normalBuffer;
-	glGenBuffers(1, &normalBuffer);
-	glBindBuffer(GL_ARRAY_BUFFER, normalBuffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * normals.size(), &normals[0], GL_STATIC_DRAW);
+	GLuint uvbuffer;
+	glGenBuffers(1, &uvbuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, uvbuffer);
+	glBufferData(GL_ARRAY_BUFFER, uvs.size() * sizeof(glm::vec2), &uvs[0], GL_STATIC_DRAW);
 
-	// 加载纹理
-	GLuint texture = loadDDS("uvmap.DDS");
-	GLuint uvBuffer;
-	glGenBuffers(1, &uvBuffer);
-	glBindBuffer(GL_ARRAY_BUFFER, uvBuffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * uvs.size(), &uvs[0], GL_STATIC_DRAW);
+	GLuint normalbuffer;
+	glGenBuffers(1, &normalbuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, normalbuffer);
+	glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(glm::vec3), &normals[0], GL_STATIC_DRAW);
 
-	GLuint programID = LoadShaders("SimpleVertexShader.vertexshader", "SimpleFragmentShader.fragmentshader");
-
-	// 加入MVP进行摄影机透视
-	// 物体放在原点不动
-	mat4 modelMatrix = mat4(1.0f);
-	GLuint mvp_id = glGetUniformLocation(programID, "MVP");
-	GLuint model_id = glGetUniformLocation(programID, "M");
-	GLuint view_id = glGetUniformLocation(programID, "V");
-
-	// 准备光源信息
-	GLuint lightId = glGetUniformLocation(programID, "LightPosition_worldspace");
-	glm::vec3 lightPos;
-
-	GLuint sampler_id = glGetUniformLocation(programID, "textureSampler");
-	mat4 MVP, viewMatrix;
+	// Get a handle for our "LightPosition" uniform
+	glUseProgram(programID);
+	GLuint LightID = glGetUniformLocation(programID, "LightPosition_worldspace");
 
 	do
 	{
+
+		// Clear the screen
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+		// Use our shader
 		glUseProgram(programID);
 
+		// Compute the MVP matrix from keyboard and mouse input
 		computeMatricesFromInputs();
+		glm::mat4 ProjectionMatrix = getProjectionMatrix();
+		glm::mat4 ViewMatrix = getViewMatrix();
+		glm::mat4 ModelMatrix = glm::mat4(1.0);
+		glm::mat4 MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
 
-		// 将矩阵传到显卡buffer中
+		// Send our transformation to the currently bound shader,
+		// in the "MVP" uniform
+		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
+		glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
+		glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, &ViewMatrix[0][0]);
+
+		glm::vec3 lightPos = glm::vec3(4, 4, 4);
+		glUniform3f(LightID, lightPos.x, lightPos.y, lightPos.z);
+
+		// Bind our texture in Texture Unit 0
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, Texture);
+		// Set our "myTextureSampler" sampler to use Texture Unit 0
+		glUniform1i(TextureID, 0);
+
+		// 1rst attribute buffer : vertices
 		glEnableVertexAttribArray(0);
 		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void *)0);
+		glVertexAttribPointer(
+			0,		  // attribute
+			3,		  // size
+			GL_FLOAT, // type
+			GL_FALSE, // normalized?
+			0,		  // stride
+			(void *)0 // array buffer offset
+		);
 
+		// 2nd attribute buffer : UVs
 		glEnableVertexAttribArray(1);
-		glBindBuffer(GL_ARRAY_BUFFER, uvBuffer);
-		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (void *)0);
+		glBindBuffer(GL_ARRAY_BUFFER, uvbuffer);
+		glVertexAttribPointer(
+			1,		  // attribute
+			2,		  // size
+			GL_FLOAT, // type
+			GL_FALSE, // normalized?
+			0,		  // stride
+			(void *)0 // array buffer offset
+		);
 
+		// 3rd attribute buffer : normals
 		glEnableVertexAttribArray(2);
-		glBindBuffer(GL_ARRAY_BUFFER, normalBuffer);
-		glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, (void *)0);
+		glBindBuffer(GL_ARRAY_BUFFER, normalbuffer);
+		glVertexAttribPointer(
+			2,		  // attribute
+			3,		  // size
+			GL_FLOAT, // type
+			GL_FALSE, // normalized?
+			0,		  // stride
+			(void *)0 // array buffer offset
+		);
 
-		// appint the texture sampler
-		// 默认情况0号就是激活的，这里只是显式的调用一次
-		// 纹理单元的编号可以通过着色器访问到
-		// 可以看见这里设定了uniform告知着色器使用那个Texture Unit
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, texture);
-		// 纹理的采样处理
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-		glGenerateMipmap(GL_TEXTURE_2D);
-		glUniform1i(sampler_id, 0);
+		// Draw the triangles !
+		glDrawArrays(GL_TRIANGLES, 0, vertices.size());
 
-		// 计算新的MVP矩阵传给着色器
-		// TODO: 加入键盘鼠标读入，计算新的P, V矩阵
-		viewMatrix = getViewMatrix();
-		MVP = getProjectionMatrix() * viewMatrix * modelMatrix;
-		glUniformMatrix4fv(mvp_id, 1, GL_FALSE, &MVP[0][0]);
-
-		// 将模型和视角矩阵也传给显卡，因为着色器需要模型表面的向量和视线方向
-		glUniformMatrix4fv(model_id, 1, GL_FALSE, &modelMatrix[0][0]);
-		glUniformMatrix4fv(view_id, 1, GL_FALSE, &viewMatrix[0][0]);
-
-		// 处理光源信息
-		lightPos = glm::vec3(4, 4, 4); // 一个静态光源
-		glUniform3f(lightId, lightPos.x, lightPos.y, lightPos.z);
-
-		// 调用绘制命令
-		glDrawArrays(GL_TRIANGLES, 0, 3 * 12);
 		glDisableVertexAttribArray(0);
 		glDisableVertexAttribArray(1);
 		glDisableVertexAttribArray(2);
@@ -177,13 +205,13 @@ int main(void)
 	while (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS &&
 		   glfwWindowShouldClose(window) == 0);
 
-	//clean up
+	// Cleanup VBO and shader
 	glDeleteBuffers(1, &vertexbuffer);
-	glDeleteBuffers(1, &uvBuffer);
-	glDeleteBuffers(1, &normalBuffer);
-	glDeleteTextures(1, &texture);
+	glDeleteBuffers(1, &uvbuffer);
+	glDeleteBuffers(1, &normalbuffer);
+	glDeleteProgram(programID);
+	glDeleteTextures(1, &Texture);
 	glDeleteVertexArrays(1, &VertexArrayID);
-	//glDeleteProgram(programID);
 
 	// Close OpenGL window and terminate GLFW
 	glfwTerminate();

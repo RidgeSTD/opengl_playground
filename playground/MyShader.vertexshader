@@ -14,7 +14,7 @@ layout(location = 2) in vec3 vertexNormal_modelspace;
 uniform mat4 MVP;
 uniform mat4 V;
 uniform mat4 M;
-uniform vec3 lightPosition_modelspace
+uniform vec3 lightPosition_modelspace;
 
 
 //  这个会自动在每个Fragment着色器中获得
